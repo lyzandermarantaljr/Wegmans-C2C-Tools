@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>C2C Helper Tools</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3d4fa0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="C2C Tools">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#eef0f7;color:#1a1a1a;min-height:100vh;padding-bottom:100px}
+.wrap{padding:1rem;max-width:540px;margin:0 auto}
+
+/* NAV TABS */
+.app-nav{display:flex;background:#fff;border-bottom:2px solid #dde0ec;position:sticky;top:0;z-index:60;max-width:540px;margin:0 auto}
+.nav-tab{flex:1;padding:14px 8px;font-size:13px;font-weight:700;color:#8890b0;text-align:center;cursor:pointer;border:none;background:none;font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.15s}
+.nav-tab.active{color:#3d4fa0;border-bottom-color:#3d4fa0}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:8px;padding-top:1rem}
+.header-left h2{font-size:18px;font-weight:700;color:#1a1a1a}
+#name-display{cursor:pointer;border-bottom:1px dashed #aab}
+#name-edit-wrap{display:none;align-items:center;gap:6px;margin-top:2px}
+#name-input{font-size:16px;font-weight:700;border:1.5px solid #7580b0;border-radius:8px;padding:4px 10px;font-family:inherit;color:#1a1a1a;background:#fff;width:160px}
+.date-sub{font-size:12px;color:#8890b0;margin-top:2px}
+.hbtns{display:flex;gap:6px}
+
+/* BUTTONS */
+.btn{font-size:13px;padding:8px 16px;border-radius:10px;background:#fff;color:#333;cursor:pointer;font-family:inherit;font-weight:600;border:1.5px solid #dde0ec}
+.btn:active{opacity:0.75;transform:scale(0.97)}
+.btn-primary{background:#3d4fa0;color:#fff;border-color:#3d4fa0}
+.btn-red{background:#ffe4e4;color:#922;border-color:#f5b8b8}
+.btn-green{background:#d8f0c0;color:#1e5008;border-color:#a0cc70}
+.btn-sm{font-size:12px;padding:6px 12px}
+.btn-full{width:100%}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1rem}
+.stat{border-radius:12px;padding:12px 14px}
+.stat:nth-child(1){background:#d6e8ff;color:#1a3a7a}
+.stat:nth-child(2){background:#d4f0e4;color:#0a4a30}
+.stat:nth-child(3){background:#f5d6ff;color:#5a1a7a}
+.stat:nth-child(4){background:#ffecd4;color:#7a3a0a}
+.stat-label{font-size:11px;font-weight:700;opacity:0.65;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.04em}
+.stat-val{font-size:26px;font-weight:800;line-height:1}
+
+/* TIMER */
+.timer-bar{background:linear-gradient(135deg,#3d4fa0,#5a3d9a);border-radius:14px;padding:14px 16px;margin-bottom:1rem;display:flex;align-items:center;gap:12px}
+.timer-left{flex:1;min-width:0}
+.timer-display{font-size:32px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;line-height:1}
+.timer-task{font-size:12px;color:rgba(255,255,255,0.7);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timer-btns{display:flex;gap:6px;flex-shrink:0}
+
+/* LOG CARDS */
+.section-head{font-size:11px;font-weight:700;color:#8890b0;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;padding-left:2px}
+.log-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.log-card{background:#fff;border-radius:14px;overflow:hidden;border:1.5px solid #dde0ec}
+.log-card.live{border-color:#70cc50;background:#f0fce8}
+.log-card.cancelled{border-color:#f5b8b8;background:#fff4f4;opacity:0.85}
+.log-card-top{display:flex;align-items:center;gap:10px;padding:12px 14px 10px}
+.log-card-pill{flex-shrink:0}
+.log-card-main{flex:1;min-width:0}
+.log-card-customer{font-size:15px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log-card-customer.cancelled-text{text-decoration:line-through;color:#bbb}
+.log-card-time{font-size:12px;color:#8890b0;margin-top:1px}
+.log-card-actions{display:flex;gap:4px;flex-shrink:0}
+.log-card-body{display:flex;gap:0;border-top:1px solid #eceef7}
+.log-card-stat{flex:1;padding:8px 12px;text-align:center;border-right:1px solid #eceef7}
+.log-card-stat:last-child{border-right:none}
+.log-card-stat-label{font-size:10px;font-weight:700;color:#aab;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px}
+.log-card-stat-val{font-size:14px;font-weight:700;color:#334}
+.log-card-notes{padding:6px 14px 10px;font-size:12px;color:#8890b0;font-style:italic;border-top:1px solid #eceef7}
+.live-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#1e6008}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#50cc28;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.live-dur{font-variant-numeric:tabular-nums;font-size:13px;font-weight:800;color:#1e6008}
+
+/* PILLS */
+.pill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap;display:inline-block}
+.p-order{background:#b8f0d8;color:#0a4a28}
+.p-double{background:#d8d0ff;color:#2e1a88}
+.p-break{background:#dde0ec;color:#44475a}
+.p-lunch{background:#ffe4a0;color:#6a3a00}
+.p-bathroom{background:#d8d0ff;color:#2e1a88}
+.p-reshop{background:#b8dcff;color:#0a2a6a}
+.p-restock{background:#c8f0b0;color:#1a4a08}
+.p-other{background:#ffd0b8;color:#6a200a}
+.p-cancelled{background:#ffc0c0;color:#7a1010}
+.sub-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:10px;font-weight:800}
+.sub-a{background:#b8f0d8;color:#0a4a28}
+.sub-b-dot{background:#d8d0ff;color:#2e1a88}
+
+/* ICON BTNS */
+.icon-btn{background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:8px;font-size:16px;color:#bbc;line-height:1;font-family:inherit}
+.icon-btn:active{opacity:0.6}
+.icon-btn.cancel-btn{color:#e08080}
+.icon-btn.del-btn{color:#ccc}
+.icon-btn.restore-btn{color:#70aa50}
+
+/* EMPTY */
+.empty{padding:3rem 1rem;text-align:center;color:#aab;font-size:14px}
+
+/* FAB */
+.fab{position:fixed;bottom:24px;right:20px;z-index:50;background:#3d4fa0;color:#fff;border:none;border-radius:50%;width:58px;height:58px;font-size:28px;cursor:pointer;box-shadow:0 4px 16px rgba(61,79,160,0.45);display:flex;align-items:center;justify-content:center;line-height:1}
+.fab:active{transform:scale(0.92)}
+.fab.hidden{display:none}
+
+/* OVERLAY + MODAL (bottom sheet) */
+.overlay{display:none;position:fixed;inset:0;background:rgba(10,10,40,0.45);z-index:100;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:1.25rem 1.25rem 2rem;width:100%;max-width:540px;max-height:88vh;overflow-y:auto}
+.modal-handle{width:40px;height:4px;background:#dde0ec;border-radius:2px;margin:0 auto 1rem}
+.modal-title{font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:1rem}
+.field{margin-bottom:12px}
+.field label{font-size:13px;color:#556;display:block;margin-bottom:5px;font-weight:600}
+.field input,.field select,.field textarea{width:100%;font-size:15px;padding:10px 13px;border:1.5px solid #dde0ec;border-radius:10px;background:#fff;color:#1a1a1a;font-family:inherit;-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#3d4fa0}
+.field textarea{resize:vertical;min-height:60px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field-hint{font-size:11px;color:#aab;margin-top:3px}
+.cond{display:none}
+.cond.show{display:block}
+.divider{border:none;border-top:1.5px solid #eceef7;margin:12px 0}
+.sub-section-title{font-size:13px;font-weight:700;color:#556;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sub-dot{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:800}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:1rem}
+.modal-actions .btn{padding:12px;font-size:14px;border-radius:12px;text-align:center}
+.modal-actions .btn-full{grid-column:1/-1}
+
+/* CANCEL OPTIONS */
+.cancel-option{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1.5px solid #dde0ec;border-radius:12px;cursor:pointer;margin-bottom:8px}
+.cancel-option.selected{border-color:#3d4fa0;background:#f0f2ff}
+.cancel-option input[type=radio]{margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#3d4fa0}
+.cancel-option-label{font-size:14px;font-weight:600;color:#1a1a1a}
+.cancel-option-sub{font-size:12px;color:#8890b0;margin-top:2px}
+
+/* SUMMARY TILES */
+.sum-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.sum-stat{border-radius:12px;padding:12px 10px}
+.sum-stat-label{font-size:10px;font-weight:700;opacity:0.65;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px}
+.sum-stat-val{font-size:22px;font-weight:800;line-height:1}
+.sum-stat-unit{font-size:11px;font-weight:500;opacity:0.6;margin-left:2px}
+.sc-teal{background:#b4ecd4;color:#0a4030}
+.sc-blue{background:#b8d8ff;color:#0a2460}
+.sc-amber{background:#ffe0a0;color:#6a3000}
+.sc-red{background:#ffb8b8;color:#6a1010}
+.sc-purple{background:#d0c8ff;color:#2a1878}
+.orders-section{background:#f4f5fb;border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.cancelled-section{background:#fff0f0;border-radius:12px;padding:12px 14px}
+.sum-section-label{font-size:11px;font-weight:700;color:#8890b0;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px}
+.sum-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eceef7;font-size:14px}
+.sum-row:last-child{border-bottom:none}
+.sum-row-label{color:#556;display:flex;align-items:center;gap:6px;font-weight:500}
+.sum-row-val{color:#1a1a1a;font-weight:700;font-size:13px}
+
+/* ── ZPL TAB ── */
+.zpl-wrap{padding-top:1rem}
+.zpl-section-label{font-size:11px;font-weight:700;color:#8890b0;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;padding-left:2px}
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem}
+.preset-card{background:#fff;border:2px solid #dde0ec;border-radius:14px;padding:14px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.15s;font-family:inherit}
+.preset-card:active{transform:scale(0.97)}
+.preset-card.selected{border-color:#3d4fa0;background:#f0f2ff}
+.preset-card-icon{font-size:22px;flex-shrink:0;width:28px;text-align:center}
+.preset-card-label{font-size:13px;font-weight:700;color:#334;text-align:left;line-height:1.2}
+.preset-card.selected .preset-card-label{color:#3d4fa0}
+.preset-card-custom{grid-column:1/-1;border-style:dashed;border-color:#c8ccd8}
+.preset-selected-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem;min-height:0}
+.selected-tag{display:flex;align-items:center;gap:5px;background:#e8ecff;border:1.5px solid #b8c4f0;border-radius:20px;padding:5px 10px;font-size:12px;font-weight:700;color:#3d4fa0}
+.selected-tag button{background:none;border:none;color:#7580b0;font-size:14px;cursor:pointer;padding:0;line-height:1;font-family:inherit}
+.zpl-generate-btn{width:100%;background:#3d4fa0;border:none;color:#fff;font-family:inherit;font-size:16px;font-weight:800;letter-spacing:1px;padding:16px;cursor:pointer;border-radius:14px;margin-bottom:1rem}
+.zpl-generate-btn:active{opacity:0.85;transform:scale(0.98)}
+.zpl-generate-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.custom-panel{background:#fff;border:1.5px solid #dde0ec;border-radius:14px;padding:16px;margin-bottom:1rem}
+.label-preview-img{width:100%;border-radius:10px;border:1.5px solid #dde0ec;background:#f4f5fb;display:block}
+.label-preview-placeholder{background:#f4f5fb;border:1.5px dashed #c8ccd8;border-radius:10px;padding:2rem;text-align:center;color:#aab;font-size:13px;margin-bottom:1rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#3d4fa0;color:#fff;font-size:13px;padding:10px 20px;border-radius:20px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:300;white-space:nowrap;font-weight:600}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="app-nav">
+  <button class="nav-tab active" onclick="switchTab('log',this)">📋 Shift Log</button>
+  <button class="nav-tab" onclick="switchTab('zpl',this)">🏷 Label QR</button>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 1 — SHIFT LOG
+════════════════════════════════════════════ -->
+<div class="tab-pane active" id="tab-log">
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <h2><span id="name-display" onclick="startEditName()">My shift log</span></h2>
+      <div id="name-edit-wrap">
+        <input type="text" id="name-input" placeholder="Your name" onkeydown="nameKey(event)">
+        <button class="btn btn-sm btn-primary" onclick="saveName()">Save</button>
+        <button class="btn btn-sm" onclick="cancelName()">✕</button>
+      </div>
+      <div class="date-sub" id="date-label"></div>
+    </div>
+    <div class="hbtns">
+      <button class="btn btn-sm" onclick="openSummary()">Summary</button>
+    </div>
+  </div>
+
+  <div class="timer-bar">
+    <div class="timer-left">
+      <div class="timer-display" id="timer-display">00:00</div>
+      <div class="timer-task" id="timer-task">No active task</div>
+    </div>
+    <div class="timer-btns">
+      <button class="btn btn-green" id="btn-start" onclick="timerStart()">Start</button>
+      <button class="btn btn-red" id="btn-stop" onclick="timerStop()" style="display:none">Stop</button>
+      <button class="btn" id="btn-cancel" onclick="timerCancel()" style="display:none">✕</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-label">Tasks</div><div class="stat-val" id="s-tasks">0</div></div>
+    <div class="stat"><div class="stat-label">Orders</div><div class="stat-val" id="s-orders">0</div></div>
+    <div class="stat"><div class="stat-label">Cancelled</div><div class="stat-val" id="s-cancelled">0</div></div>
+    <div class="stat"><div class="stat-label">Units</div><div class="stat-val" id="s-units">0</div></div>
+  </div>
+
+  <div class="section-head">Today's log</div>
+  <div class="log-list" id="log-list">
+    <div class="empty">No tasks yet — tap + to log a task or hit Start.</div>
+  </div>
+
+</div>
+</div><!-- end tab-log -->
+
+<!-- ═══════════════════════════════════════════
+     TAB 2 — ZPL LABEL QR
+════════════════════════════════════════════ -->
+<div class="tab-pane" id="tab-zpl">
+<div class="wrap zpl-wrap">
+
+  <div class="zpl-section-label">Select labels to print</div>
+  <div class="preset-grid">
+    <button class="preset-card" data-key="FRAGILE" onclick="togglePreset(this)">
+      <span class="preset-card-icon">⚠️</span>
+      <span class="preset-card-label">Fragile</span>
+    </button>
+    <button class="preset-card" data-key="THIS SIDE UP" onclick="togglePreset(this)">
+      <span class="preset-card-icon">⬆️</span>
+      <span class="preset-card-label">This Side Up</span>
+    </button>
+    <button class="preset-card" data-key="DO NOT STACK" onclick="togglePreset(this)">
+      <span class="preset-card-icon">🚫</span>
+      <span class="preset-card-label">Do Not Stack</span>
+    </button>
+    <button class="preset-card" data-key="KEEP REFRIGERATED" onclick="togglePreset(this)">
+      <span class="preset-card-icon">❄️</span>
+      <span class="preset-card-label">Keep Refrigerated</span>
+    </button>
+    <button class="preset-card" data-key="KEEP FROZEN" onclick="togglePreset(this)">
+      <span class="preset-card-icon">🧊</span>
+      <span class="preset-card-label">Keep Frozen</span>
+    </button>
+    <button class="preset-card preset-card-custom" data-key="custom" onclick="toggleCustom(this)">
+      <span class="preset-card-icon">✏️</span>
+      <span class="preset-card-label">Custom text...</span>
+    </button>
+  </div>
+
+  <div class="cond" id="custom-panel">
+    <div class="custom-panel">
+      <div class="field">
+        <label>Custom label text</label>
+        <input type="text" id="z-text" placeholder="e.g. PERISHABLE" oninput="updateCustomTag()">
+      </div>
+    </div>
+  </div>
+
+  <div id="selected-tags-wrap" style="display:none;margin-bottom:1rem">
+    <div class="zpl-section-label">Selected</div>
+    <div class="preset-selected-list" id="selected-tags"></div>
+  </div>
+
+  <button class="zpl-generate-btn" id="zpl-gen-btn" onclick="zplGenerate()" disabled>Generate QR Code</button>
+
+  <div id="label-preview-wrap" style="display:none;margin-bottom:1.5rem">
+    <div class="zpl-section-label">Label preview</div>
+    <div id="label-preview-inner"></div>
+  </div>
+
+</div>
+</div><!-- end tab-zpl -->
+
+<!-- FAB (log tab only) -->
+<button class="fab" id="fab" onclick="openModal()">+</button>
+
+<!-- ═══════════ MODALS ═══════════ -->
+
+<!-- Task Modal -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Log a task</div>
+    <div class="field">
+      <label>Task type</label>
+      <select id="f-type" onchange="typeChanged()">
+        <option value="Order">Order</option>
+        <option value="Double">Double order</option>
+        <option value="Break">Break</option>
+        <option value="Lunch">Lunch</option>
+        <option value="Bathroom">Bathroom</option>
+        <option value="Reshop">Reshop</option>
+        <option value="Restock">Restock</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Start time</label>
+        <input type="time" id="f-start">
+        <div class="field-hint" id="start-note"></div>
+      </div>
+      <div class="field"><label>End time</label><input type="time" id="f-end"></div>
+    </div>
+    <div class="cond" id="f-single">
+      <div class="field"><label>Customer name</label><input type="text" id="f-customer" placeholder="e.g. Sarah M."></div>
+      <div class="field-row">
+        <div class="field"><label># Items</label><input type="number" id="f-items" min="0" placeholder="0"><div class="field-hint">Unique products</div></div>
+        <div class="field"><label>Total qty</label><input type="number" id="f-qty" min="0" placeholder="0"><div class="field-hint">Total units</div></div>
+      </div>
+    </div>
+    <div class="cond" id="f-double">
+      <hr class="divider">
+      <div class="sub-section-title"><span class="sub-dot sub-a">A</span>Order A</div>
+      <div class="field"><label>Customer A</label><input type="text" id="f-cust-a" placeholder="e.g. Sarah M."></div>
+      <div class="field-row">
+        <div class="field"><label># Items</label><input type="number" id="f-items-a" min="0" placeholder="0"></div>
+        <div class="field"><label>Total qty</label><input type="number" id="f-qty-a" min="0" placeholder="0"></div>
+      </div>
+      <hr class="divider">
+      <div class="sub-section-title"><span class="sub-dot sub-b-dot">B</span>Order B</div>
+      <div class="field"><label>Customer B</label><input type="text" id="f-cust-b" placeholder="e.g. James T."></div>
+      <div class="field-row">
+        <div class="field"><label># Items</label><input type="number" id="f-items-b" min="0" placeholder="0"></div>
+        <div class="field"><label>Total qty</label><input type="number" id="f-qty-b" min="0" placeholder="0"></div>
+      </div>
+      <hr class="divider">
+    </div>
+    <div class="cond" id="f-other-wrap">
+      <div class="field"><label>Description</label><input type="text" id="f-other" placeholder="Describe task..."></div>
+    </div>
+    <div class="field"><label>Notes / comments</label><textarea id="f-notes" placeholder="Substitutions, issues, anything worth noting..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTask()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Timer Start Modal -->
+<div class="overlay" id="timer-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">What are you starting?</div>
+    <div class="field">
+      <label>Task type</label>
+      <select id="tf-type" onchange="timerTypeChanged()">
+        <option value="Order">Order</option>
+        <option value="Double">Double order</option>
+        <option value="Break">Break</option>
+        <option value="Lunch">Lunch</option>
+        <option value="Bathroom">Bathroom</option>
+        <option value="Reshop">Reshop</option>
+        <option value="Restock">Restock</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="cond" id="tf-single">
+      <div class="field"><label>Customer name</label><input type="text" id="tf-customer" placeholder="e.g. Sarah M."></div>
+      <div class="field-row">
+        <div class="field"><label># Items</label><input type="number" id="tf-items" min="0" placeholder="0"><div class="field-hint">Unique products</div></div>
+        <div class="field"><label>Total qty</label><input type="number" id="tf-qty" min="0" placeholder="0"><div class="field-hint">Total units</div></div>
+      </div>
+    </div>
+    <div class="cond" id="tf-double">
+      <hr class="divider">
+      <div class="sub-section-title"><span class="sub-dot sub-a">A</span>Order A</div>
+      <div class="field"><label>Customer A</label><input type="text" id="tf-cust-a" placeholder="e.g. Sarah M."></div>
+      <div class="field-row">
+        <div class="field"><label># Items</label><input type="number" id="tf-items-a" min="0" placeholder="0"></div>
+        <div class="field"><label>Total qty</label><input type="number" id="tf-qty-a" min="0" placeholder="0"></div>
+      </div>
+      <hr class="divider">
+      <div class="sub-section-title"><span class="sub-dot sub-b-dot">B</span>Order B</div>
+      <div class="field"><label>Customer B</label><input type="text" id="tf-cust-b" placeholder="e.g. James T."></div>
+      <div class="field-row">
+        <div class="field"><label># Items</label><input type="number" id="tf-items-b" min="0" placeholder="0"></div>
+        <div class="field"><label>Total qty</label><input type="number" id="tf-qty-b" min="0" placeholder="0"></div>
+      </div>
+      <hr class="divider">
+    </div>
+    <div class="cond" id="tf-other-wrap">
+      <div class="field"><label>Description</label><input type="text" id="tf-other" placeholder="Describe task..."></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="timerCancel()">Cancel</button>
+      <button class="btn btn-green" onclick="timerConfirmStart()">Start timer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="overlay" id="cancel-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="cancel-modal-title">Cancel order</div>
+    <div id="cancel-options"></div>
+    <div class="field" style="margin-top:4px">
+      <label>Reason (optional)</label>
+      <input type="text" id="cancel-reason" placeholder="e.g. Customer removed order">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeCancelModal()">Back</button>
+      <button class="btn btn-red" onclick="confirmCancel()">Mark cancelled</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="overlay" id="qr-modal">
+  <div class="modal" style="align-items:center;text-align:center">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="qr-modal-title">Scan to print</div>
+    <div id="qrcode" style="background:#fff;padding:16px;border-radius:12px;display:inline-block;margin-bottom:10px"></div>
+    <div style="font-size:16px;font-weight:800;letter-spacing:2px;color:#3d4fa0;text-transform:uppercase;margin-bottom:6px" id="zpl-label-display"></div>
+    <div style="font-size:12px;color:#8890b0;margin-bottom:1.25rem" id="qr-label-count"></div>
+    <button class="btn btn-sm" style="margin-bottom:1rem;width:100%" onclick="showLabelPreview()">Preview label layout</button>
+    <button class="btn btn-primary btn-full" onclick="closeQrModal()">Done</button>
+  </div>
+</div>
+
+<!-- Label Preview Modal -->
+<div class="overlay" id="preview-modal">
+  <div class="modal" style="align-items:center;text-align:center">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Label preview</div>
+    <div style="font-size:12px;color:#8890b0;margin-bottom:1rem">Rendered via Labelary — shows approximate print output</div>
+    <div id="preview-content" style="width:100%;margin-bottom:1.25rem">
+      <div style="background:#f4f5fb;border:1.5px dashed #c8ccd8;border-radius:10px;padding:2rem;color:#aab;font-size:13px">Loading preview...</div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="closePreviewModal()">Close</button>
+  </div>
+</div>
+
+<!-- Summary Modal -->
+<div class="overlay" id="summary-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Shift summary</div>
+    <div id="summary-content"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="copySummary()">Copy</button>
+      <button class="btn btn-primary btn-full" onclick="closeSummary()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════ */
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('fab').className = 'fab' + (id==='log' ? '' : ' hidden');
+}
+
+/* ═══════════════════════════════════════
+   SHARED UTILS
+═══════════════════════════════════════ */
+var d = new Date();
+document.getElementById('date-label').textContent = d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+function pad(n){return String(n).padStart(2,'0')}
+function nowTime(){var n=new Date();return pad(n.getHours())+':'+pad(n.getMinutes())}
+function fmt12(t){if(!t)return'—';var p=t.split(':');var h=parseInt(p[0]);var m=p[1];var a=h>=12?'pm':'am';h=h%12||12;return h+':'+m+' '+a;}
+function diffMins(s,e){if(!s||!e)return null;var sp=s.split(':'),ep=e.split(':');var sm=parseInt(sp[0])*60+parseInt(sp[1]),em=parseInt(ep[0])*60+parseInt(ep[1]);return em>sm?em-sm:null;}
+function fmtDur(m){if(!m)return'—';if(m<60)return m+'m';return Math.floor(m/60)+'h '+(m%60)+'m';}
+function pillClass(t){return{Order:'p-order',Double:'p-double',Break:'p-break',Lunch:'p-lunch',Bathroom:'p-bathroom',Reshop:'p-reshop',Restock:'p-restock',Other:'p-other'}[t]||'p-other';}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2200);}
+
+/* ═══════════════════════════════════════
+   SHIFT LOG
+═══════════════════════════════════════ */
+var tasks=[],editIdx=-1,cancelIdx=-1,timerInterval=null,timerStartTime=null,timerTask=null;
+
+function startEditName(){
+  var cur=document.getElementById('name-display').textContent;
+  document.getElementById('name-input').value=cur==='My shift log'?'':cur.replace("'s shift log",'');
+  document.getElementById('name-display').style.display='none';
+  document.getElementById('name-edit-wrap').style.display='flex';
+  setTimeout(function(){document.getElementById('name-input').focus();},50);
+}
+function saveName(){var n=document.getElementById('name-input').value.trim();document.getElementById('name-display').textContent=n?n+"'s shift log":'My shift log';document.getElementById('name-display').style.display='';document.getElementById('name-edit-wrap').style.display='none';}
+function cancelName(){document.getElementById('name-display').style.display='';document.getElementById('name-edit-wrap').style.display='none';}
+function nameKey(e){if(e.key==='Enter')saveName();if(e.key==='Escape')cancelName();}
+
+function setVisible(id,show){document.getElementById(id).className='cond'+(show?' show':'');}
+function typeChanged(){var t=document.getElementById('f-type').value;setVisible('f-single',t==='Order'||t==='Reshop');setVisible('f-double',t==='Double');setVisible('f-other-wrap',t==='Other');}
+function timerTypeChanged(){var t=document.getElementById('tf-type').value;setVisible('tf-single',t==='Order'||t==='Reshop');setVisible('tf-double',t==='Double');setVisible('tf-other-wrap',t==='Other');}
+
+function timerStart(){
+  document.getElementById('tf-type').value='Order';
+  ['tf-customer','tf-items','tf-qty','tf-cust-a','tf-items-a','tf-qty-a','tf-cust-b','tf-items-b','tf-qty-b','tf-other'].forEach(function(id){document.getElementById(id).value='';});
+  timerTypeChanged();
+  document.getElementById('timer-modal').classList.add('open');
+}
+function timerConfirmStart(){
+  var t=document.getElementById('tf-type').value;
+  timerTask={type:t,notes:'',live:true};
+  if(t==='Double'){timerTask.custA=document.getElementById('tf-cust-a').value.trim();timerTask.itemsA=document.getElementById('tf-items-a').value;timerTask.qtyA=document.getElementById('tf-qty-a').value;timerTask.custB=document.getElementById('tf-cust-b').value.trim();timerTask.itemsB=document.getElementById('tf-items-b').value;timerTask.qtyB=document.getElementById('tf-qty-b').value;}
+  else{timerTask.customer=document.getElementById('tf-customer').value.trim();timerTask.items=document.getElementById('tf-items').value;timerTask.qty=document.getElementById('tf-qty').value;timerTask.other=document.getElementById('tf-other').value.trim();}
+  timerStartTime=new Date();
+  timerTask.start=pad(timerStartTime.getHours())+':'+pad(timerStartTime.getMinutes());
+  document.getElementById('timer-modal').classList.remove('open');
+  document.getElementById('btn-start').style.display='none';
+  document.getElementById('btn-stop').style.display='';
+  document.getElementById('btn-cancel').style.display='';
+  var lbl=t==='Double'?'Double':(t==='Other'&&timerTask.other?timerTask.other:t);
+  if(t!=='Double'&&timerTask.customer)lbl+=' · '+timerTask.customer;
+  if(t==='Double'){if(timerTask.custA)lbl+=': '+timerTask.custA;if(timerTask.custB)lbl+=' & '+timerTask.custB;}
+  document.getElementById('timer-task').textContent=lbl+' (running...)';
+  timerInterval=setInterval(function(){
+    var el=Math.floor((new Date()-timerStartTime)/1000);
+    document.getElementById('timer-display').textContent=pad(Math.floor(el/60))+':'+pad(el%60);
+    var dc=document.querySelector('.live-dur');if(dc)dc.textContent=pad(Math.floor(el/60))+':'+pad(el%60);
+  },1000);
+  renderAll();
+}
+function timerStop(){
+  if(!timerStartTime)return;
+  clearInterval(timerInterval);timerInterval=null;
+  var e=new Date();timerTask.end=pad(e.getHours())+':'+pad(e.getMinutes());timerTask.live=false;
+  tasks.push(timerTask);tasks.sort(function(a,b){return a.start.localeCompare(b.start);});
+  timerTask=null;timerStartTime=null;resetTimerUI();renderAll();
+}
+function timerCancel(){
+  clearInterval(timerInterval);timerInterval=null;timerTask=null;timerStartTime=null;
+  document.getElementById('timer-modal').classList.remove('open');resetTimerUI();renderAll();
+}
+function resetTimerUI(){document.getElementById('timer-display').textContent='00:00';document.getElementById('timer-task').textContent='No active task';document.getElementById('btn-start').style.display='';document.getElementById('btn-stop').style.display='none';document.getElementById('btn-cancel').style.display='none';}
+
+function openModal(idx){
+  editIdx=(idx===undefined?-1:idx);
+  document.getElementById('modal-title').textContent=editIdx>=0?'Edit task':'Log a task';
+  var tk=editIdx>=0?tasks[editIdx]:null;
+  document.getElementById('f-type').value=tk?tk.type:'Order';
+  document.getElementById('f-start').value=tk?tk.start||'':nowTime();
+  document.getElementById('f-end').value=tk?tk.end||'':'';
+  document.getElementById('start-note').textContent=tk?'':'Auto-filled now';
+  document.getElementById('f-customer').value=tk&&tk.customer||'';
+  document.getElementById('f-items').value=tk&&tk.items||'';
+  document.getElementById('f-qty').value=tk&&tk.qty||'';
+  document.getElementById('f-cust-a').value=tk&&tk.custA||'';
+  document.getElementById('f-items-a').value=tk&&tk.itemsA||'';
+  document.getElementById('f-qty-a').value=tk&&tk.qtyA||'';
+  document.getElementById('f-cust-b').value=tk&&tk.custB||'';
+  document.getElementById('f-items-b').value=tk&&tk.itemsB||'';
+  document.getElementById('f-qty-b').value=tk&&tk.qtyB||'';
+  document.getElementById('f-other').value=tk&&tk.other||'';
+  document.getElementById('f-notes').value=tk&&tk.notes||'';
+  typeChanged();
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');editIdx=-1;}
+
+function saveTask(){
+  var start=document.getElementById('f-start').value;
+  if(!start){showToast('Please enter a start time.');return;}
+  var t=document.getElementById('f-type').value;
+  var tk={type:t,start:start,end:document.getElementById('f-end').value,notes:document.getElementById('f-notes').value.trim()};
+  if(t==='Double'){tk.custA=document.getElementById('f-cust-a').value.trim();tk.itemsA=document.getElementById('f-items-a').value;tk.qtyA=document.getElementById('f-qty-a').value;tk.custB=document.getElementById('f-cust-b').value.trim();tk.itemsB=document.getElementById('f-items-b').value;tk.qtyB=document.getElementById('f-qty-b').value;}
+  else{tk.customer=document.getElementById('f-customer').value.trim();tk.items=document.getElementById('f-items').value;tk.qty=document.getElementById('f-qty').value;tk.other=document.getElementById('f-other').value.trim();}
+  if(editIdx>=0){tk.cancelled=tasks[editIdx].cancelled;tk.cancelledSub=tasks[editIdx].cancelledSub;tk.cancelReason=tasks[editIdx].cancelReason;}
+  if(editIdx>=0)tasks[editIdx]=tk;else tasks.push(tk);
+  tasks.sort(function(a,b){return a.start.localeCompare(b.start);});
+  closeModal();renderAll();
+}
+function deleteTask(i){if(!confirm('Remove this task?'))return;tasks.splice(i,1);renderAll();}
+
+function openCancelModal(i){
+  cancelIdx=i;var tk=tasks[i];
+  document.getElementById('cancel-reason').value=tk.cancelReason||'';
+  var opts='';
+  if(tk.type==='Double'){
+    document.getElementById('cancel-modal-title').textContent='Cancel double order';
+    opts+='<div class="cancel-option" onclick="selectCancel(this,\'A\')"><input type="radio" name="csub" value="A"><div><div class="cancel-option-label">Cancel order A only</div><div class="cancel-option-sub">'+(tk.custA||'Customer A')+'</div></div></div>';
+    opts+='<div class="cancel-option" onclick="selectCancel(this,\'B\')"><input type="radio" name="csub" value="B"><div><div class="cancel-option-label">Cancel order B only</div><div class="cancel-option-sub">'+(tk.custB||'Customer B')+'</div></div></div>';
+    opts+='<div class="cancel-option" onclick="selectCancel(this,\'both\')"><input type="radio" name="csub" value="both"><div><div class="cancel-option-label">Cancel both orders</div><div class="cancel-option-sub">Mark entire double as cancelled</div></div></div>';
+  } else {
+    document.getElementById('cancel-modal-title').textContent='Cancel order';
+    opts+='<div class="cancel-option selected" onclick="selectCancel(this,\'all\')"><input type="radio" name="csub" value="all" checked><div><div class="cancel-option-label">Mark as cancelled</div><div class="cancel-option-sub">'+(tk.customer||tk.type)+'</div></div></div>';
+  }
+  document.getElementById('cancel-options').innerHTML=opts;
+  document.getElementById('cancel-modal').classList.add('open');
+}
+function selectCancel(el,val){document.querySelectorAll('.cancel-option').forEach(function(o){o.classList.remove('selected');});el.classList.add('selected');var r=el.querySelector('input[type=radio]');if(r)r.checked=true;}
+function closeCancelModal(){document.getElementById('cancel-modal').classList.remove('open');cancelIdx=-1;}
+function confirmCancel(){
+  if(cancelIdx<0)return;
+  var tk=tasks[cancelIdx];
+  var sel=document.querySelector('input[name=csub]:checked');var val=sel?sel.value:'all';
+  var reason=document.getElementById('cancel-reason').value.trim();
+  if(val==='both'||val==='all'){tk.cancelled=true;tk.cancelledSub=null;}
+  else if(val==='A'||val==='B'){tk.cancelled=false;tk.cancelledSub=val;}
+  tk.cancelReason=reason||'';
+  closeCancelModal();renderAll();showToast('Marked as cancelled');
+}
+function restoreTask(i){tasks[i].cancelled=false;tasks[i].cancelledSub=null;tasks[i].cancelReason='';renderAll();showToast('Cancellation removed');}
+
+function makeCard(tk,i,isLive){
+  var frag=document.createDocumentFragment();
+  var isOrder=tk.type==='Order'||tk.type==='Reshop';
+  var isDouble=tk.type==='Double';
+  var dur=isLive?null:diffMins(tk.start,tk.end);
+  var el=isLive&&timerStartTime?Math.floor((new Date()-timerStartTime)/1000):0;
+
+  if(isDouble){
+    var fullCanc=tk.cancelled&&!tk.cancelledSub;
+    var aCanc=fullCanc||(tk.cancelledSub==='A');
+    var bCanc=fullCanc||(tk.cancelledSub==='B');
+    var card=document.createElement('div');
+    card.className='log-card'+(isLive?' live':'')+(fullCanc?' cancelled':'');
+    var actBtns='';
+    if(!isLive){
+      if(!aCanc||!bCanc){actBtns+='<button class="icon-btn cancel-btn" onclick="openCancelModal('+i+')" title="Cancel">⊗</button>';}
+      else{actBtns+='<button class="icon-btn restore-btn" onclick="restoreTask('+i+')" title="Restore">↩</button>';}
+      actBtns+='<button class="icon-btn del-btn" onclick="deleteTask('+i+')" title="Delete">✕</button>';
+    }
+    var timeStr=isLive?'<span class="live-badge"><span class="live-dot"></span><span class="live-dur">'+pad(Math.floor(el/60))+':'+pad(el%60)+'</span></span>':fmt12(tk.start)+(tk.end?' – '+fmt12(tk.end):'');
+    card.innerHTML='<div class="log-card-top"><div class="log-card-pill"><span class="pill p-double">Double</span></div><div class="log-card-main"><div class="log-card-time">'+timeStr+(dur?' · '+fmtDur(dur):'')+'</div></div><div class="log-card-actions">'+actBtns+'</div></div>';
+    var bodyA=document.createElement('div');
+    bodyA.style.cssText='display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid #eceef7;'+(aCanc?'background:#fff4f4;':'');
+    bodyA.innerHTML='<span class="sub-badge sub-a">A</span><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;color:#1a1a1a'+(aCanc?';text-decoration:line-through;color:#bbb':'')+'">'+(tk.custA||'Customer A')+'</div><div style="font-size:12px;color:#8890b0;margin-top:1px">'+(tk.itemsA||'?')+' items · '+(tk.qtyA||'?')+' units'+(aCanc?' · <span style="color:#e08080">cancelled</span>':'')+'</div></div>';
+    card.appendChild(bodyA);
+    var bodyB=document.createElement('div');
+    bodyB.style.cssText='display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid #eceef7;'+(bCanc?'background:#fff4f4;':'background:#f4f0ff;');
+    bodyB.innerHTML='<span class="sub-badge sub-b-dot">B</span><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;color:#1a1a1a'+(bCanc?';text-decoration:line-through;color:#bbb':'')+'">'+(tk.custB||'Customer B')+'</div><div style="font-size:12px;color:#8890b0;margin-top:1px">'+(tk.itemsB||'?')+' items · '+(tk.qtyB||'?')+' units'+(bCanc?' · <span style="color:#e08080">cancelled</span>':'')+'</div></div>';
+    card.appendChild(bodyB);
+    if(tk.notes){var nd=document.createElement('div');nd.className='log-card-notes';nd.textContent=tk.notes;card.appendChild(nd);}
+    if(tk.cancelReason&&(aCanc||bCanc)){var cd=document.createElement('div');cd.className='log-card-notes';cd.style.color='#e08080';cd.textContent='Reason: '+tk.cancelReason;card.appendChild(cd);}
+    if(!isLive)card.addEventListener('dblclick',function(){openModal(i);});
+    frag.appendChild(card);
+  } else {
+    var cancelled=tk.cancelled;
+    var lbl=tk.type==='Other'&&tk.other?tk.other:tk.type;
+    var pClass=cancelled?'p-cancelled':pillClass(tk.type);
+    var custName=isOrder?(tk.customer||'—'):(tk.type==='Other'&&tk.other?tk.other:tk.type);
+    var timeStr=isLive?'<span class="live-badge"><span class="live-dot"></span><span class="live-dur">'+pad(Math.floor(el/60))+':'+pad(el%60)+'</span></span>':fmt12(tk.start)+(tk.end?' – '+fmt12(tk.end):'');
+    var actBtns='';
+    if(!isLive){
+      if(isOrder&&!cancelled){actBtns+='<button class="icon-btn cancel-btn" onclick="openCancelModal('+i+')" title="Cancel">⊗</button>';}
+      if(isOrder&&cancelled){actBtns+='<button class="icon-btn restore-btn" onclick="restoreTask('+i+')" title="Restore">↩</button>';}
+      actBtns+='<button class="icon-btn del-btn" onclick="deleteTask('+i+')" title="Delete">✕</button>';
+    }
+    var card=document.createElement('div');
+    card.className='log-card'+(isLive?' live':'')+(cancelled?' cancelled':'');
+    card.innerHTML='<div class="log-card-top"><div class="log-card-pill"><span class="pill '+pClass+'">'+(cancelled?'Cancelled':lbl)+'</span></div><div class="log-card-main"><div class="log-card-customer'+(cancelled?' cancelled-text':'')+'">'+(custName)+'</div><div class="log-card-time">'+timeStr+(dur?' · '+fmtDur(dur):'')+'</div></div><div class="log-card-actions">'+actBtns+'</div></div>';
+    if(isOrder&&(tk.items||tk.qty)){
+      var body=document.createElement('div');
+      body.className='log-card-body';
+      body.innerHTML='<div class="log-card-stat"><div class="log-card-stat-label"># Items</div><div class="log-card-stat-val">'+(tk.items||'?')+'</div></div><div class="log-card-stat"><div class="log-card-stat-label">Total qty</div><div class="log-card-stat-val">'+(tk.qty||'?')+'</div></div>'+(dur?'<div class="log-card-stat"><div class="log-card-stat-label">Duration</div><div class="log-card-stat-val">'+fmtDur(dur)+'</div></div>':'');
+      card.appendChild(body);
+    }
+    if(tk.notes||(cancelled&&tk.cancelReason)){var nd=document.createElement('div');nd.className='log-card-notes';nd.textContent=cancelled&&tk.cancelReason?'Reason: '+tk.cancelReason:tk.notes;if(cancelled)nd.style.color='#e08080';card.appendChild(nd);}
+    if(!isLive)card.addEventListener('dblclick',function(){if(!cancelled)openModal(i);});
+    frag.appendChild(card);
+  }
+  return frag;
+}
+
+function renderAll(){
+  var list=document.getElementById('log-list');list.innerHTML='';
+  if(!tasks.length&&!timerTask){list.innerHTML='<div class="empty">No tasks yet — tap + to log a task or hit Start.</div>';updateStats();return;}
+  tasks.forEach(function(tk,i){list.appendChild(makeCard(tk,i,false));});
+  if(timerTask){list.appendChild(makeCard(timerTask,-1,true));}
+  updateStats();
+}
+
+function countOrderUnits(tk){
+  if(tk.type==='Double'){var aCanc=tk.cancelled||(tk.cancelledSub==='A');var bCanc=tk.cancelled||(tk.cancelledSub==='B');var cnt=0,items=0,qty=0;if(!aCanc){cnt++;items+=(parseInt(tk.itemsA)||0);qty+=(parseInt(tk.qtyA)||0);}if(!bCanc){cnt++;items+=(parseInt(tk.itemsB)||0);qty+=(parseInt(tk.qtyB)||0);}return{count:cnt,items:items,qty:qty};}
+  if(tk.type==='Order'||tk.type==='Reshop'){if(tk.cancelled)return{count:0,items:0,qty:0};return{count:1,items:(parseInt(tk.items)||0),qty:(parseInt(tk.qty)||0)};}
+  return{count:0,items:0,qty:0};
+}
+function updateStats(){
+  var totalTasks=tasks.length+(timerTask?1:0),orders=0,units=0,cancelled=0;
+  tasks.forEach(function(tk){var r=countOrderUnits(tk);orders+=r.count;units+=r.qty;if(tk.type==='Order'||tk.type==='Reshop'){if(tk.cancelled)cancelled++;}if(tk.type==='Double'){if(tk.cancelled&&!tk.cancelledSub)cancelled+=2;else if(tk.cancelledSub==='A'||tk.cancelledSub==='B')cancelled++;}});
+  if(timerTask){var r=countOrderUnits(timerTask);orders+=r.count;units+=r.qty;}
+  document.getElementById('s-tasks').textContent=totalTasks;
+  document.getElementById('s-orders').textContent=orders;
+  document.getElementById('s-cancelled').textContent=cancelled;
+  document.getElementById('s-units').textContent=units;
+}
+
+function calcSummaryData(){
+  var totalOrders=0,totalQty=0,totalCancelled=0,orderMins=0,orderLines=[],cancelLines=[];
+  tasks.forEach(function(tk){
+    if(tk.type==='Order'||tk.type==='Reshop'){orderMins+=(diffMins(tk.start,tk.end)||0);if(tk.cancelled){totalCancelled++;cancelLines.push((tk.customer||'Unknown')+(tk.cancelReason?' — '+tk.cancelReason:''));}else{totalOrders++;totalQty+=(parseInt(tk.qty)||0);orderLines.push({name:tk.customer||'Unknown',qty:(tk.qty||'?'),items:(tk.items||'?'),tag:'',dur:diffMins(tk.start,tk.end)});}}
+    if(tk.type==='Double'){orderMins+=(diffMins(tk.start,tk.end)||0);var aCanc=tk.cancelled||(tk.cancelledSub==='A');var bCanc=tk.cancelled||(tk.cancelledSub==='B');if(!aCanc){totalOrders++;totalQty+=(parseInt(tk.qtyA)||0);orderLines.push({name:tk.custA||'Unknown',qty:(tk.qtyA||'?'),items:(tk.itemsA||'?'),tag:'A',dur:null});}else{totalCancelled++;cancelLines.push((tk.custA||'Order A')+' (A)'+(tk.cancelReason?' — '+tk.cancelReason:''));}if(!bCanc){totalOrders++;totalQty+=(parseInt(tk.qtyB)||0);orderLines.push({name:tk.custB||'Unknown',qty:(tk.qtyB||'?'),items:(tk.itemsB||'?'),tag:'B',dur:null});}else{totalCancelled++;cancelLines.push((tk.custB||'Order B')+' (B)'+(tk.cancelReason?' — '+tk.cancelReason:''));}}
+  });
+  var secsPerItem=orderMins&&totalQty?Math.round((orderMins*60)/totalQty):null;
+  return{totalOrders:totalOrders,totalQty:totalQty,totalCancelled:totalCancelled,secsPerItem:secsPerItem,orderLines:orderLines,cancelLines:cancelLines};
+}
+
+function openSummary(){
+  if(!tasks.length){showToast('No completed tasks yet.');return;}
+  var s=calcSummaryData();
+  var html='<div class="sum-tiles"><div class="sum-stat sc-teal"><div class="sum-stat-label">Done</div><div class="sum-stat-val">'+s.totalOrders+'</div></div><div class="sum-stat sc-blue"><div class="sum-stat-label">Units</div><div class="sum-stat-val">'+s.totalQty+'</div></div><div class="sum-stat '+(s.totalCancelled>0?'sc-red':'sc-amber')+'"><div class="sum-stat-label">Cancelled</div><div class="sum-stat-val">'+s.totalCancelled+'</div></div></div>'
+    +'<div class="sum-stat sc-purple" style="margin-bottom:12px"><div class="sum-stat-label">Avg time per unit</div><div class="sum-stat-val">'+(s.secsPerItem!==null?s.secsPerItem:'—')+'<span class="sum-stat-unit">sec / item</span></div></div>';
+  if(s.orderLines.length){
+    html+='<div class="orders-section"><div class="sum-section-label">Orders</div>';
+    s.orderLines.forEach(function(o){
+      var tag=o.tag?'<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-size:10px;font-weight:800;background:'+(o.tag==='A'?'#b8f0d8':'#d8d0ff')+';color:'+(o.tag==='A'?'#0a4a28':'#2e1a88')+'">'+o.tag+'</span>':'';
+      html+='<div class="sum-row"><span class="sum-row-label">'+tag+o.name+'</span><span class="sum-row-val">'+o.items+' items · '+o.qty+' units</span></div>';
+    });
+    html+='</div>';
+  }
+  if(s.cancelLines.length){
+    html+='<div class="cancelled-section"><div class="sum-section-label" style="color:#c05050">Cancelled</div>';
+    s.cancelLines.forEach(function(l){html+='<div class="sum-row"><span style="font-size:13px;color:#c08080;text-decoration:line-through">'+l+'</span></div>';});
+    html+='</div>';
+  }
+  document.getElementById('summary-content').innerHTML=html;
+  document.getElementById('summary-modal').classList.add('open');
+}
+function closeSummary(){document.getElementById('summary-modal').classList.remove('open');}
+
+function copySummary(){
+  var s=calcSummaryData();
+  var name=document.getElementById('name-display').textContent;
+  var date=document.getElementById('date-label').textContent;
+  var speed=s.secsPerItem!==null?s.secsPerItem+'s/item':'—';
+  var lines=[name+' — '+date,'','Orders: '+s.totalOrders+' | Units: '+s.totalQty+' | Cancelled: '+s.totalCancelled+' | '+speed,''];
+  s.orderLines.forEach(function(o){lines.push((o.tag?'['+o.tag+'] ':'')+o.name+': '+o.items+' items / '+o.qty+' units');});
+  if(s.cancelLines.length){lines.push('');s.cancelLines.forEach(function(l){lines.push('[Cancelled] '+l);});}
+  navigator.clipboard.writeText(lines.join('\n')).then(function(){showToast('Copied!');});
+}
+
+renderAll();
+
+/* ═══════════════════════════════════════
+   ZPL LABEL TOOL
+═══════════════════════════════════════ */
+var zplPresets={
+  'FRAGILE':        {text:'FRAGILE',repeats:5,size:150},
+  'THIS SIDE UP':   {text:'THIS SIDE UP',repeats:4,size:120},
+  'DO NOT STACK':   {text:'DO NOT STACK',repeats:4,size:120},
+  'KEEP REFRIGERATED':{text:'KEEP REFRIGERATED',repeats:4,size:80},
+  'KEEP FROZEN':    {text:'KEEP FROZEN',repeats:4,size:130}
+};
+
+var selectedLabels=[];
+var customLabel=null;
+var lastZPL='';
+
+function togglePreset(btn){
+  var key=btn.getAttribute('data-key');
+  btn.classList.toggle('selected');
+  var idx=selectedLabels.indexOf(key);
+  if(idx>=0){selectedLabels.splice(idx,1);}
+  else{selectedLabels.push(key);}
+  renderSelectedTags();
+  updateGenBtn();
+}
+
+function toggleCustom(btn){
+  btn.classList.toggle('selected');
+  var panel=document.getElementById('custom-panel');
+  if(btn.classList.contains('selected')){
+    panel.className='cond show';
+  } else {
+    panel.className='cond';
+    customLabel=null;
+    var idx=selectedLabels.indexOf('__custom__');
+    if(idx>=0)selectedLabels.splice(idx,1);
+    renderSelectedTags();
+    updateGenBtn();
+  }
+}
+
+function updateCustomTag(){
+  var val=document.getElementById('z-text').value.trim();
+  var idx=selectedLabels.indexOf('__custom__');
+  if(val){
+    customLabel=val;
+    if(idx<0)selectedLabels.push('__custom__');
+  } else {
+    customLabel=null;
+    if(idx>=0)selectedLabels.splice(idx,1);
+  }
+  renderSelectedTags();
+  updateGenBtn();
+}
+
+function renderSelectedTags(){
+  var wrap=document.getElementById('selected-tags-wrap');
+  var list=document.getElementById('selected-tags');
+  if(selectedLabels.length===0){wrap.style.display='none';list.innerHTML='';return;}
+  wrap.style.display='block';
+  list.innerHTML='';
+  selectedLabels.forEach(function(key){
+    var label=key==='__custom__'?(customLabel||'Custom'):(zplPresets[key]?zplPresets[key].text:key);
+    var tag=document.createElement('div');
+    tag.className='selected-tag';
+    tag.innerHTML=label+'<button onclick="removeLabel(\''+key+'\')" title="Remove">×</button>';
+    list.appendChild(tag);
+  });
+}
+
+function removeLabel(key){
+  var idx=selectedLabels.indexOf(key);
+  if(idx>=0)selectedLabels.splice(idx,1);
+  if(key==='__custom__'){
+    customLabel=null;
+    document.getElementById('custom-panel').className='cond';
+    document.querySelector('[data-key="custom"]').classList.remove('selected');
+    document.getElementById('z-text').value='';
+  } else {
+    var btn=document.querySelector('[data-key="'+key+'"]');
+    if(btn)btn.classList.remove('selected');
+  }
+  renderSelectedTags();
+  updateGenBtn();
+}
+
+function updateGenBtn(){
+  var btn=document.getElementById('zpl-gen-btn');
+  var hasValid=selectedLabels.some(function(k){return k!=='__custom__'||customLabel;});
+  btn.disabled=!hasValid;
+}
+
+function buildZPLForEntry(text,repeats,size){
+  var spacing=size+50;
+  var lines=['^XA'];
+  for(var i=0;i<repeats;i++){var y=100+i*spacing;lines.push('^FO125,'+y+'^A0N,'+size+','+size+'^FD'+text+'^FS');}
+  lines.push('^XZ');
+  return lines.join('\n');
+}
+
+function buildCombinedZPL(){
+  var entries=[];
+  selectedLabels.forEach(function(key){
+    if(key==='__custom__'){
+      if(customLabel)entries.push(customLabel);
+    } else {
+      var p=zplPresets[key];
+      if(p)entries.push(p.text);
+    }
+  });
+  if(!entries.length)return'';
+
+  var labelW=812;
+  var labelH=1218;
+  var margin=30;
+  var usableW=labelW-margin*2;
+  var usableH=labelH-margin*2;
+  var n=entries.length;
+  var maxFont=600;
+  var minFont=28;
+
+  // each entry gets an equal horizontal column, text rotated top to bottom
+  var slotW=Math.floor(usableW/n);
+
+  // font size = slot width (fills column horizontally after rotation)
+  // then clamp so text length fits vertically
+  var fontSize=slotW;
+  entries.forEach(function(t){
+    var fontByH=Math.floor(usableH/(t.length*0.58));
+    fontSize=Math.min(fontSize,fontByH);
+  });
+  fontSize=Math.min(fontSize,maxFont);
+  fontSize=Math.max(fontSize,minFont);
+
+  var lines=['^XA','^LH0,0'];
+  entries.forEach(function(text,i){
+    // center each entry in its slot
+    var x=margin+i*slotW+Math.floor((slotW-fontSize)/2);
+    lines.push('^FO'+x+','+margin+'^A0R,'+fontSize+','+fontSize+'^FD'+text+'^FS');
+  });
+  lines.push('^XZ');
+  return lines.join('\n');
+}
+
+function zplGenerate(){
+  var zpl=buildCombinedZPL();
+  if(!zpl){showToast('Select at least one label');return;}
+  lastZPL=zpl;
+  var labels=selectedLabels.map(function(k){return k==='__custom__'?(customLabel||'Custom'):(zplPresets[k]?zplPresets[k].text:k);});
+  document.getElementById('zpl-label-display').textContent=labels.join(' + ');
+  document.getElementById('qr-label-count').textContent=labels.length+' label type'+(labels.length!==1?'s':'')+' combined';
+  var container=document.getElementById('qrcode');
+  container.innerHTML='';
+  new QRCode(container,{text:zpl,width:270,height:270,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  document.getElementById('qr-modal').classList.add('open');
+}
+function closeQrModal(){document.getElementById('qr-modal').classList.remove('open');}
+
+function showLabelPreview(){
+  var zpl=lastZPL;
+  var encoded=encodeURIComponent(zpl);
+  var url='https://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/'+encoded;
+  window.open(url,'_blank');
+  closeQrModal();
+}
+
+/* ═══════════════════════════════════════
+   LOCAL STORAGE PERSISTENCE
+═══════════════════════════════════════ */
+var LS_TASKS='shopperTools_tasks';
+var LS_TIMER='shopperTools_timer';
+var LS_NAME='shopperTools_name';
+
+function saveToStorage(){
+  try{
+    localStorage.setItem(LS_TASKS,JSON.stringify(tasks));
+    var name=document.getElementById('name-display').textContent;
+    localStorage.setItem(LS_NAME,name);
+    if(timerTask&&timerStartTime){
+      localStorage.setItem(LS_TIMER,JSON.stringify({task:timerTask,startEpoch:timerStartTime.getTime()}));
+    } else {
+      localStorage.removeItem(LS_TIMER);
+    }
+  }catch(e){}
+}
+
+function loadFromStorage(){
+  try{
+    var savedName=localStorage.getItem(LS_NAME);
+    if(savedName)document.getElementById('name-display').textContent=savedName;
+
+    var savedTasks=localStorage.getItem(LS_TASKS);
+    if(savedTasks)tasks=JSON.parse(savedTasks);
+
+    var savedTimer=localStorage.getItem(LS_TIMER);
+    if(savedTimer){
+      var td=JSON.parse(savedTimer);
+      timerTask=td.task;
+      timerStartTime=new Date(td.startEpoch);
+      var elapsed=Math.floor((new Date()-timerStartTime)/1000);
+      if(elapsed>0&&elapsed<86400){
+        document.getElementById('btn-start').style.display='none';
+        document.getElementById('btn-stop').style.display='';
+        document.getElementById('btn-cancel').style.display='';
+        var lbl=timerTask.type==='Double'?'Double':(timerTask.type==='Other'&&timerTask.other?timerTask.other:timerTask.type);
+        if(timerTask.type!=='Double'&&timerTask.customer)lbl+=' · '+timerTask.customer;
+        document.getElementById('timer-task').textContent=lbl+' (running...)';
+        timerInterval=setInterval(function(){
+          var el=Math.floor((new Date()-timerStartTime)/1000);
+          document.getElementById('timer-display').textContent=pad(Math.floor(el/60))+':'+pad(el%60);
+          var dc=document.querySelector('.live-dur');if(dc)dc.textContent=pad(Math.floor(el/60))+':'+pad(el%60);
+        },1000);
+      } else {
+        timerTask=null;timerStartTime=null;
+        localStorage.removeItem(LS_TIMER);
+      }
+    }
+  }catch(e){}
+}
+
+/* patch save into every write operation */
+var _origSaveTask=saveTask;
+saveTask=function(){_origSaveTask();saveToStorage();};
+var _origDeleteTask=deleteTask;
+deleteTask=function(i){_origDeleteTask(i);saveToStorage();};
+var _origTimerStop=timerStop;
+timerStop=function(){_origTimerStop();saveToStorage();};
+var _origTimerCancel=timerCancel;
+timerCancel=function(){_origTimerCancel();saveToStorage();};
+var _origTimerConfirmStart=timerConfirmStart;
+timerConfirmStart=function(){_origTimerConfirmStart();saveToStorage();};
+var _origConfirmCancel=confirmCancel;
+confirmCancel=function(){_origConfirmCancel();saveToStorage();};
+var _origRestoreTask=restoreTask;
+restoreTask=function(i){_origRestoreTask(i);saveToStorage();};
+var _origSaveName=saveName;
+saveName=function(){_origSaveName();saveToStorage();};
+
+/* ── INIT ── */
+loadFromStorage();
+renderAll();
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(function(e){console.log('SW reg failed:',e);});
+}
+</script>
+</body>
+</html>

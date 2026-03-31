@@ -1,0 +1,25 @@
+{
+  "name": "Wegmans C2C Helper Tools",
+  "short_name": "C2C Tools",
+  "description": "Shift log and label QR generator for cart-to-curb shoppers",
+  "start_url": "/Wegmans-C2C-Helper-Tools/shopper_tools.html",
+  "scope": "/Wegmans-C2C-Helper-Tools/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef0f7",
+  "theme_color": "#3d4fa0",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

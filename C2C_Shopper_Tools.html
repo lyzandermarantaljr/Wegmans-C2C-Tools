@@ -47,7 +47,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .stat{border-radius:12px;padding:12px 14px}
 .stat:nth-child(1){background:#d6e8ff;color:#1a3a7a}
 .stat:nth-child(2){background:#d4f0e4;color:#0a4a30}
-.stat:nth-child(3){background:#f5d6ff;color:#5a1a7a}
+.stat:nth-child(3){background:#fcd8d8;color:#7a1010}
 .stat:nth-child(4){background:#ffecd4;color:#7a3a0a}
 .stat-label{font-size:11px;font-weight:700;opacity:0.65;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.04em}
 .stat-val{font-size:26px;font-weight:800;line-height:1}
@@ -185,6 +185,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* TOAST */
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#3d4fa0;color:#fff;font-size:13px;padding:10px 20px;border-radius:20px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:300;white-space:nowrap;font-weight:600}
 .toast.show{opacity:1}
+/* END OF SHIFT POPUP */
+.eod-popup{display:none;position:fixed;inset:0;background:rgba(10,10,40,0.55);z-index:200;align-items:center;justify-content:center;padding:1.5rem}
+.eod-popup.open{display:flex}
+.eod-card{background:#fff;border-radius:20px;padding:2rem 1.5rem;max-width:340px;width:100%;text-align:center}
+.eod-icon{font-size:48px;margin-bottom:12px}
+.eod-title{font-size:20px;font-weight:800;color:#1a1a1a;margin-bottom:6px}
+.eod-sub{font-size:13px;color:#8890b0;margin-bottom:1.5rem;line-height:1.5}
+.eod-btns{display:flex;flex-direction:column;gap:8px}
 </style>
 </head>
 <body>
@@ -202,7 +210,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="wrap">
 
   <div class="header">
-    <div>
+    <div style="flex:1;min-width:0">
       <h2><span id="name-display" onclick="startEditName()">My shift log</span></h2>
       <div id="name-edit-wrap">
         <input type="text" id="name-input" placeholder="Your name" onkeydown="nameKey(event)">
@@ -210,6 +218,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <button class="btn btn-sm" onclick="cancelName()">✕</button>
       </div>
       <div class="date-sub" id="date-label"></div>
+      <div class="shift-time-row" id="shift-display" onclick="startEditShift()">
+        <span id="shift-display-text" style="color:#8890b0;font-size:12px;border-bottom:1px dashed #c8ccd8;cursor:pointer">Set shift hours</span>
+      </div>
+      <div id="shift-edit-wrap" style="display:none;margin-top:5px;display:none;align-items:center;gap:6px;flex-wrap:wrap">
+        <select id="shift-start-sel" style="font-size:13px;padding:4px 8px;border:1.5px solid #7580b0;border-radius:8px;background:#fff;color:#1a1a1a;font-family:inherit"></select>
+        <span style="font-size:12px;color:#8890b0">to</span>
+        <select id="shift-end-sel" style="font-size:13px;padding:4px 8px;border:1.5px solid #7580b0;border-radius:8px;background:#fff;color:#1a1a1a;font-family:inherit"></select>
+        <button class="btn btn-sm btn-primary" onclick="saveShift()">Save</button>
+        <button class="btn btn-sm" onclick="cancelShift()">✕</button>
+      </div>
     </div>
     <div class="hbtns">
       <button class="btn btn-sm" onclick="openSummary()">Summary</button>
@@ -419,6 +437,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<!-- End of Shift Popup -->
+<div class="eod-popup" id="eod-popup">
+  <div class="eod-card">
+    <div class="eod-icon">🏁</div>
+    <div class="eod-title">Shift's over!</div>
+    <div class="eod-sub" id="eod-sub">Great work today. Ready to send your summary?</div>
+    <div class="eod-btns">
+      <button class="btn btn-primary btn-full" onclick="eodEmail()">Email summary</button>
+      <button class="btn btn-full" onclick="eodView()">View summary</button>
+      <button class="btn btn-full" style="color:#8890b0" onclick="closeEod()">Dismiss</button>
+    </div>
+  </div>
+</div>
+
 <!-- Cancel Modal -->
 <div class="overlay" id="cancel-modal">
   <div class="modal">
@@ -444,21 +476,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="qrcode" style="background:#fff;padding:16px;border-radius:12px;display:inline-block;margin-bottom:10px"></div>
     <div style="font-size:16px;font-weight:800;letter-spacing:2px;color:#3d4fa0;text-transform:uppercase;margin-bottom:6px" id="zpl-label-display"></div>
     <div style="font-size:12px;color:#8890b0;margin-bottom:1.25rem" id="qr-label-count"></div>
-    <button class="btn btn-sm" style="margin-bottom:1rem;width:100%" onclick="showLabelPreview()">Preview label layout</button>
-    <button class="btn btn-primary btn-full" onclick="closeQrModal()">Done</button>
-  </div>
-</div>
-
-<!-- Label Preview Modal -->
-<div class="overlay" id="preview-modal">
-  <div class="modal" style="align-items:center;text-align:center">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Label preview</div>
-    <div style="font-size:12px;color:#8890b0;margin-bottom:1rem">Rendered via Labelary — shows approximate print output</div>
-    <div id="preview-content" style="width:100%;margin-bottom:1.25rem">
-      <div style="background:#f4f5fb;border:1.5px dashed #c8ccd8;border-radius:10px;padding:2rem;color:#aab;font-size:13px">Loading preview...</div>
+    <div id="inline-preview-wrap" style="width:100%;margin-bottom:1rem;display:none">
+      <div id="inline-preview-content" style="width:100%"></div>
     </div>
-    <button class="btn btn-primary btn-full" onclick="closePreviewModal()">Close</button>
+    <button class="btn btn-sm" id="preview-toggle-btn" style="margin-bottom:1rem;width:100%" onclick="toggleInlinePreview()">Preview label layout</button>
+    <button class="btn btn-primary btn-full" onclick="closeQrModal()">Done</button>
   </div>
 </div>
 
@@ -718,8 +740,19 @@ function updateStats(){
 function calcSummaryData(){
   var totalOrders=0,totalQty=0,totalCancelled=0,orderMins=0,orderLines=[],cancelLines=[];
   tasks.forEach(function(tk){
-    if(tk.type==='Order'||tk.type==='Reshop'){orderMins+=(diffMins(tk.start,tk.end)||0);if(tk.cancelled){totalCancelled++;cancelLines.push((tk.customer||'Unknown')+(tk.cancelReason?' — '+tk.cancelReason:''));}else{totalOrders++;totalQty+=(parseInt(tk.qty)||0);orderLines.push({name:tk.customer||'Unknown',qty:(tk.qty||'?'),items:(tk.items||'?'),tag:'',dur:diffMins(tk.start,tk.end)});}}
-    if(tk.type==='Double'){orderMins+=(diffMins(tk.start,tk.end)||0);var aCanc=tk.cancelled||(tk.cancelledSub==='A');var bCanc=tk.cancelled||(tk.cancelledSub==='B');if(!aCanc){totalOrders++;totalQty+=(parseInt(tk.qtyA)||0);orderLines.push({name:tk.custA||'Unknown',qty:(tk.qtyA||'?'),items:(tk.itemsA||'?'),tag:'A',dur:null});}else{totalCancelled++;cancelLines.push((tk.custA||'Order A')+' (A)'+(tk.cancelReason?' — '+tk.cancelReason:''));}if(!bCanc){totalOrders++;totalQty+=(parseInt(tk.qtyB)||0);orderLines.push({name:tk.custB||'Unknown',qty:(tk.qtyB||'?'),items:(tk.itemsB||'?'),tag:'B',dur:null});}else{totalCancelled++;cancelLines.push((tk.custB||'Order B')+' (B)'+(tk.cancelReason?' — '+tk.cancelReason:''));}}
+    if(tk.type==='Order'||tk.type==='Reshop'){
+      orderMins+=(diffMins(tk.start,tk.end)||0);
+      if(tk.cancelled){totalCancelled++;cancelLines.push((tk.customer||'Unknown')+(tk.cancelReason?' — '+tk.cancelReason:''));}
+      else{totalOrders++;totalQty+=(parseInt(tk.qty)||0);orderLines.push({name:tk.customer||'Unknown',qty:(tk.qty||'?'),items:(tk.items||'?'),tag:'',start:tk.start,end:tk.end,dur:diffMins(tk.start,tk.end)});}
+    }
+    if(tk.type==='Double'){
+      orderMins+=(diffMins(tk.start,tk.end)||0);
+      var aCanc=tk.cancelled||(tk.cancelledSub==='A');var bCanc=tk.cancelled||(tk.cancelledSub==='B');
+      if(!aCanc){totalOrders++;totalQty+=(parseInt(tk.qtyA)||0);orderLines.push({name:tk.custA||'Unknown',qty:(tk.qtyA||'?'),items:(tk.itemsA||'?'),tag:'A',start:tk.start,end:tk.end,dur:diffMins(tk.start,tk.end)});}
+      else{totalCancelled++;cancelLines.push((tk.custA||'Order A')+' (A)'+(tk.cancelReason?' — '+tk.cancelReason:''));}
+      if(!bCanc){totalOrders++;totalQty+=(parseInt(tk.qtyB)||0);orderLines.push({name:tk.custB||'Unknown',qty:(tk.qtyB||'?'),items:(tk.itemsB||'?'),tag:'B',start:tk.start,end:tk.end,dur:diffMins(tk.start,tk.end)});}
+      else{totalCancelled++;cancelLines.push((tk.custB||'Order B')+' (B)'+(tk.cancelReason?' — '+tk.cancelReason:''));}
+    }
   });
   var secsPerItem=orderMins&&totalQty?Math.round((orderMins*60)/totalQty):null;
   return{totalOrders:totalOrders,totalQty:totalQty,totalCancelled:totalCancelled,secsPerItem:secsPerItem,orderLines:orderLines,cancelLines:cancelLines};
@@ -734,7 +767,8 @@ function openSummary(){
     html+='<div class="orders-section"><div class="sum-section-label">Orders</div>';
     s.orderLines.forEach(function(o){
       var tag=o.tag?'<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-size:10px;font-weight:800;background:'+(o.tag==='A'?'#b8f0d8':'#d8d0ff')+';color:'+(o.tag==='A'?'#0a4a28':'#2e1a88')+'">'+o.tag+'</span>':'';
-      html+='<div class="sum-row"><span class="sum-row-label">'+tag+o.name+'</span><span class="sum-row-val">'+o.items+' items · '+o.qty+' units</span></div>';
+      var timeRange=o.start?'<span style="font-size:11px;color:#aab;margin-left:4px">'+fmt12(o.start)+(o.end?' – '+fmt12(o.end):'')+'</span>':'';
+      html+='<div class="sum-row"><span class="sum-row-label">'+tag+o.name+timeRange+'</span><span class="sum-row-val">'+o.items+' items · '+o.qty+' units'+(o.dur?' · '+fmtDur(o.dur):'')+'</span></div>';
     });
     html+='</div>';
   }
@@ -754,7 +788,10 @@ function copySummary(){
   var date=document.getElementById('date-label').textContent;
   var speed=s.secsPerItem!==null?s.secsPerItem+'s/item':'—';
   var lines=[name+' — '+date,'','Orders: '+s.totalOrders+' | Units: '+s.totalQty+' | Cancelled: '+s.totalCancelled+' | '+speed,''];
-  s.orderLines.forEach(function(o){lines.push((o.tag?'['+o.tag+'] ':'')+o.name+': '+o.items+' items / '+o.qty+' units');});
+  s.orderLines.forEach(function(o){
+    var timeStr=o.start?(fmt12(o.start)+(o.end?' – '+fmt12(o.end):'')):'' ;
+    lines.push((o.tag?'['+o.tag+'] ':'')+o.name+': '+o.items+' items / '+o.qty+' units'+(timeStr?' ('+timeStr+')':''));
+  });
   if(s.cancelLines.length){lines.push('');s.cancelLines.forEach(function(l){lines.push('[Cancelled] '+l);});}
   navigator.clipboard.writeText(lines.join('\n')).then(function(){showToast('Copied!');});
 }
@@ -878,8 +915,10 @@ function buildCombinedZPL(){
   var usableW=labelW-margin*2;
   var usableH=labelH-margin*2;
   var n=entries.length;
-  var maxFont=600;
+  var maxFont=300;
   var minFont=28;
+  // custom text gets a smaller cap so it doesn't overwhelm the label
+  if(entries.length===1&&selectedLabels[0]==='__custom__')maxFont=160;
 
   // each entry gets an equal horizontal column, text rotated top to bottom
   var slotW=Math.floor(usableW/n);
@@ -918,12 +957,141 @@ function zplGenerate(){
 }
 function closeQrModal(){document.getElementById('qr-modal').classList.remove('open');}
 
-function showLabelPreview(){
-  var zpl=lastZPL;
-  var encoded=encodeURIComponent(zpl);
-  var url='https://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/'+encoded;
-  window.open(url,'_blank');
-  closeQrModal();
+function toggleInlinePreview(){
+  var wrap=document.getElementById('inline-preview-wrap');
+  var btn=document.getElementById('preview-toggle-btn');
+  if(wrap.style.display==='none'){
+    wrap.style.display='block';
+    btn.textContent='Hide preview';
+    var content=document.getElementById('inline-preview-content');
+    content.innerHTML='<div style="background:#f4f5fb;border:1.5px dashed #c8ccd8;border-radius:10px;padding:1.5rem;color:#aab;font-size:13px">Loading...</div>';
+    var encoded=encodeURIComponent(lastZPL);
+    var url='https://api.labelary.com/v1/printers/8dpmm/labels/4x6/0/'+encoded;
+    var img=new Image();
+    img.onload=function(){
+      content.innerHTML='';
+      img.style.cssText='width:100%;border-radius:10px;border:1.5px solid #dde0ec;display:block';
+      content.appendChild(img);
+    };
+    img.onerror=function(){
+      content.innerHTML='<div style="background:#fff0f0;border:1.5px solid #f5b8b8;border-radius:10px;padding:1rem;color:#922;font-size:12px">Preview unavailable offline.</div>';
+    };
+    img.src=url;
+  } else {
+    wrap.style.display='none';
+    btn.textContent='Preview label layout';
+  }
+}
+
+/* ═══════════════════════════════════════
+   SHIFT SETTINGS + END OF SHIFT
+═══════════════════════════════════════ */
+var LS_SHIFT='shopperTools_shift';
+var shiftStart='',shiftEnd='',eodFired=false;
+var eodInterval=null;
+
+function buildTimeOptions(startH,endH,endM){
+  var opts=['<option value="">— not set —</option>'];
+  for(var h=startH;h<=endH;h++){
+    var maxM=(h===endH)?endM:45;
+    [0,15,30,45].forEach(function(m){
+      if(m>maxM)return;
+      var val=pad(h)+':'+pad(m);
+      var label=(h>12?h-12:h===0?12:h)+':'+(m===0?'00':m)+(h>=12?' pm':' am');
+      opts.push('<option value="'+val+'">'+label+'</option>');
+    });
+  }
+  return opts.join('');
+}
+
+function startEditShift(){
+  document.getElementById('shift-start-sel').innerHTML=buildTimeOptions(5,17,45);
+  document.getElementById('shift-end-sel').innerHTML=buildTimeOptions(10,20,30);
+  document.getElementById('shift-start-sel').value=shiftStart||'';
+  document.getElementById('shift-end-sel').value=shiftEnd||'';
+  document.getElementById('shift-display').style.display='none';
+  var w=document.getElementById('shift-edit-wrap');
+  w.style.display='flex';
+}
+function cancelShift(){
+  document.getElementById('shift-display').style.display='';
+  document.getElementById('shift-edit-wrap').style.display='none';
+}
+function saveShift(){
+  shiftStart=document.getElementById('shift-start-sel').value;
+  shiftEnd=document.getElementById('shift-end-sel').value;
+  localStorage.setItem(LS_SHIFT,JSON.stringify({start:shiftStart,end:shiftEnd}));
+  eodFired=false;
+  cancelShift();
+  updateShiftDisplay();
+  showToast('Shift hours saved');
+  startEodWatcher();
+}
+function updateShiftDisplay(){
+  var el=document.getElementById('shift-display-text');
+  if(shiftStart||shiftEnd){
+    var fmt=function(t){if(!t)return'?';var p=t.split(':');var h=parseInt(p[0]);var m=p[1];var a=h>=12?'pm':'am';h=h%12||12;return h+':'+m+' '+a;};
+    el.textContent=(shiftStart?fmt(shiftStart):'?')+' – '+(shiftEnd?fmt(shiftEnd):'?');
+    el.style.color='#3d4fa0';
+  } else {
+    el.textContent='Set shift hours';
+    el.style.color='#8890b0';
+  }
+}
+
+function loadShiftSettings(){
+  var saved=JSON.parse(localStorage.getItem(LS_SHIFT)||'{}');
+  shiftStart=saved.start||'';
+  shiftEnd=saved.end||'';
+  updateShiftDisplay();
+  if(shiftEnd)startEodWatcher();
+}
+
+function startEodWatcher(){
+  if(eodInterval)clearInterval(eodInterval);
+  eodInterval=setInterval(function(){
+    if(!shiftEnd||eodFired)return;
+    var now=new Date();
+    var cur=pad(now.getHours())+':'+pad(now.getMinutes());
+    if(cur===shiftEnd&&!timerTask){
+      eodFired=true;
+      openEod();
+    }
+  },30000); // check every 30s
+}
+
+function openEod(){
+  var name=document.getElementById('name-display').textContent;
+  document.getElementById('eod-sub').textContent='Great work, '+name+'! Ready to send your shift summary?';
+  document.getElementById('eod-popup').classList.add('open');
+}
+function closeEod(){document.getElementById('eod-popup').classList.remove('open');}
+function eodView(){closeEod();openSummary();}
+function eodEmail(){
+  closeEod();
+  sendSummaryEmail();
+}
+
+function sendSummaryEmail(){
+  var s=calcSummaryData();
+  var name=document.getElementById('name-display').textContent;
+  var date=document.getElementById('date-label').textContent;
+  var speed=s.secsPerItem!==null?s.secsPerItem+'s/item':'—';
+  var body=name+' — Shift Summary\nDate: '+date+'\n\n';
+  body+='Orders: '+s.totalOrders+' | Units: '+s.totalQty+' | Cancelled: '+s.totalCancelled+' | '+speed+'\n\n';
+  if(s.orderLines.length){
+    body+='Order detail:\n';
+    s.orderLines.forEach(function(o){
+      body+=(o.tag?'['+o.tag+'] ':'')+o.name+': '+o.items+' items / '+o.qty+' units'+(o.completedAt?' (completed '+o.completedAt+')':'')+'\n';
+    });
+  }
+  if(s.cancelLines.length){
+    body+='\nCancelled:\n';
+    s.cancelLines.forEach(function(l){body+='[Cancelled] '+l+'\n';});
+  }
+  var subject=encodeURIComponent(name+' — Shift Summary ('+date+')');
+  var bodyEnc=encodeURIComponent(body);
+  window.location.href='mailto:?subject='+subject+'&body='+bodyEnc;
 }
 
 /* ═══════════════════════════════════════
@@ -932,10 +1100,14 @@ function showLabelPreview(){
 var LS_TASKS='shopperTools_tasks';
 var LS_TIMER='shopperTools_timer';
 var LS_NAME='shopperTools_name';
+var LS_DATE='shopperTools_date';
+
+function todayStr(){var n=new Date();return n.getFullYear()+'-'+pad(n.getMonth()+1)+'-'+pad(n.getDate());}
 
 function saveToStorage(){
   try{
     localStorage.setItem(LS_TASKS,JSON.stringify(tasks));
+    localStorage.setItem(LS_DATE,todayStr());
     var name=document.getElementById('name-display').textContent;
     localStorage.setItem(LS_NAME,name);
     if(timerTask&&timerStartTime){
@@ -951,34 +1123,55 @@ function loadFromStorage(){
     var savedName=localStorage.getItem(LS_NAME);
     if(savedName)document.getElementById('name-display').textContent=savedName;
 
-    var savedTasks=localStorage.getItem(LS_TASKS);
-    if(savedTasks)tasks=JSON.parse(savedTasks);
+    // daily reset — wipe tasks if saved date != today
+    var savedDate=localStorage.getItem(LS_DATE);
+    if(savedDate&&savedDate!==todayStr()){
+      tasks=[];
+      localStorage.removeItem(LS_TASKS);
+      localStorage.removeItem(LS_TIMER);
+      localStorage.setItem(LS_DATE,todayStr());
+    } else {
+      var savedTasks=localStorage.getItem(LS_TASKS);
+      if(savedTasks)tasks=JSON.parse(savedTasks);
 
-    var savedTimer=localStorage.getItem(LS_TIMER);
-    if(savedTimer){
-      var td=JSON.parse(savedTimer);
-      timerTask=td.task;
-      timerStartTime=new Date(td.startEpoch);
-      var elapsed=Math.floor((new Date()-timerStartTime)/1000);
-      if(elapsed>0&&elapsed<86400){
-        document.getElementById('btn-start').style.display='none';
-        document.getElementById('btn-stop').style.display='';
-        document.getElementById('btn-cancel').style.display='';
-        var lbl=timerTask.type==='Double'?'Double':(timerTask.type==='Other'&&timerTask.other?timerTask.other:timerTask.type);
-        if(timerTask.type!=='Double'&&timerTask.customer)lbl+=' · '+timerTask.customer;
-        document.getElementById('timer-task').textContent=lbl+' (running...)';
-        timerInterval=setInterval(function(){
-          var el=Math.floor((new Date()-timerStartTime)/1000);
-          document.getElementById('timer-display').textContent=pad(Math.floor(el/60))+':'+pad(el%60);
-          var dc=document.querySelector('.live-dur');if(dc)dc.textContent=pad(Math.floor(el/60))+':'+pad(el%60);
-        },1000);
-      } else {
-        timerTask=null;timerStartTime=null;
-        localStorage.removeItem(LS_TIMER);
+      var savedTimer=localStorage.getItem(LS_TIMER);
+      if(savedTimer){
+        var td=JSON.parse(savedTimer);
+        timerTask=td.task;
+        timerStartTime=new Date(td.startEpoch);
+        var elapsed=Math.floor((new Date()-timerStartTime)/1000);
+        if(elapsed>0&&elapsed<86400){
+          document.getElementById('btn-start').style.display='none';
+          document.getElementById('btn-stop').style.display='';
+          document.getElementById('btn-cancel').style.display='';
+          var lbl=timerTask.type==='Double'?'Double':(timerTask.type==='Other'&&timerTask.other?timerTask.other:timerTask.type);
+          if(timerTask.type!=='Double'&&timerTask.customer)lbl+=' · '+timerTask.customer;
+          document.getElementById('timer-task').textContent=lbl+' (running...)';
+          timerInterval=setInterval(function(){
+            var el=Math.floor((new Date()-timerStartTime)/1000);
+            document.getElementById('timer-display').textContent=pad(Math.floor(el/60))+':'+pad(el%60);
+            var dc=document.querySelector('.live-dur');if(dc)dc.textContent=pad(Math.floor(el/60))+':'+pad(el%60);
+          },1000);
+        } else {
+          timerTask=null;timerStartTime=null;
+          localStorage.removeItem(LS_TIMER);
+        }
       }
     }
   }catch(e){}
 }
+
+// also check midnight reset while app is open
+setInterval(function(){
+  var savedDate=localStorage.getItem(LS_DATE);
+  if(savedDate&&savedDate!==todayStr()&&!timerTask){
+    tasks=[];
+    saveToStorage();
+    renderAll();
+    showToast("New day — log reset!");
+    eodFired=false;
+  }
+},60000);
 
 /* patch save into every write operation */
 var _origSaveTask=saveTask;
@@ -1000,6 +1193,7 @@ saveName=function(){_origSaveName();saveToStorage();};
 
 /* ── INIT ── */
 loadFromStorage();
+loadShiftSettings();
 renderAll();
 
 if('serviceWorker' in navigator){
